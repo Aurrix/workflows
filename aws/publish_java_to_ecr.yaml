@@ -1,0 +1,34 @@
+name: Publish docker image to ECR
+on:
+  workflow_call:
+    inputs:
+      dockerfile_path:
+        type: string
+        default: "./Dockerfile"
+        description: "Path to a Dockerfile"
+      aws_account_id:
+        type: string
+        required: true
+        description: "AWS account of ECR repository"
+      aws_region:
+        type: string
+        default: eu-north-1
+        desceription: "AWS region of ECR"
+    secrets:
+      envPAT:
+        required: true
+jobs:
+  publish:
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+      - name: Set up gradle
+        uses: gradle/gradle-build-action@v2.1.3
+      - name: Set up Docker
+        run: sudo apt install docker
+      - name: Build docker image
+        run: docker build -t action-image ${{inputs.dockerfile_path}}
+      - name: Login to AWS ECR
+        run: aws ecr get-login-password --region ${{inputs.aws_region}} | docker login --username AWS --password-stdin aws_account_id.dkr.ecr.${{inputs.aws_region}}.amazonaws.com
