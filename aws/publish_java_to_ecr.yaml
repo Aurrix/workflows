@@ -6,6 +6,15 @@ on:
         type: string
         default: "./Dockerfile"
         description: "Path to a Dockerfile"
+      repository_name:
+        type: string
+        required: true
+        description: "Path to a Dockerfile"
+      tag:
+        type: string
+        required: true
+        description: "Path to a Dockerfile"
+    secrets:
       aws_account_id:
         type: string
         required: true
@@ -14,9 +23,6 @@ on:
         type: string
         default: eu-north-1
         desceription: "AWS region of ECR"
-    secrets:
-      envPAT:
-        required: true
 jobs:
   publish:
     steps:
@@ -31,4 +37,6 @@ jobs:
       - name: Build docker image
         run: docker build -t action-image ${{inputs.dockerfile_path}}
       - name: Login to AWS ECR
-        run: aws ecr get-login-password --region ${{inputs.aws_region}} | docker login --username AWS --password-stdin aws_account_id.dkr.ecr.${{inputs.aws_region}}.amazonaws.com
+        run: aws ecr get-login-password --region ${{secrets.aws_region}} | docker login --username AWS --password-stdin ${{secrets.aws_account_id}}.dkr.ecr.${{secrets.aws_region}}.amazonaws.com
+      - name: Publish the image
+      - run: docker push "${{secrets.aws_account_id}}.dkr.ecr.${{secrets.aws_region}}.amazonaws.com/${{inputs.repository_name}}:${{inputs.tag}}"
