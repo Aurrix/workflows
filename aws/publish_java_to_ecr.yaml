@@ -1,4 +1,7 @@
 name: Publish docker image to ECR
+description: |
+  Required secrets:
+
 on:
   workflow_call:
     inputs:
@@ -25,9 +28,19 @@ on:
         desceription: "AWS region of ECR"
 jobs:
   publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    concurrency: "terraform"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            role-to-assume: ${{ secrets.ROLE_ARN }}
+            aws-region: ${{ secrets.AWS_REGION }}
       - name: Set up JDK
         uses: actions/setup-java@v2
       - name: Set up gradle

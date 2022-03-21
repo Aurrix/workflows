@@ -1,0 +1,5 @@
+name: Publish docker image to ECR
+on:
+  workflow_call:
+jobs:
+  plan
