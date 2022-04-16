@@ -1,6 +1,13 @@
 name: Publish docker image to ECR
 description: |
-  Required secrets:
+  Required Parameters:
+  ecr_name: String
+  tag: String
+  aws_account_id: Secret(String)
+  aws_region: Secret(String)
+  
+  Optional Parameters:
+  dockerfile_path: Default('./Dockerfile')
 
 on:
   workflow_call:
@@ -9,14 +16,14 @@ on:
         type: string
         default: "./Dockerfile"
         description: "Path to a Dockerfile"
-      repository_name:
+      ecr_name:
         type: string
         required: true
-        description: "Path to a Dockerfile"
+        description: "Name of the aws repository"
       tag:
         type: string
         required: true
-        description: "Path to a Dockerfile"
+        description: "Tag that would make up image name"
     secrets:
       aws_account_id:
         type: string

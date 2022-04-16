@@ -1,0 +1,138 @@
+name: Publish docker image to ECR
+description: |
+  Expects terraoform steps to be in terraform/pipeline
+on:
+  workflow_call:
+    inputs:
+      ### Terraform ###
+      workspace:
+        type: string
+        required: true
+        description: "Workspace to run terraform on"
+      plan_only:
+        default: false
+        type: boolean
+        description: "If true runs only plan"
+      ### Generic Variables ###
+      service_name:
+        default: 'unamed_service'
+        type: string
+        description: 'Passed to terraform as SERVICE_NAME'
+    secrets:
+      ### MongoDB Section ###
+      mongo_org_id:
+        default: ''
+        type: string
+        description: 'Passed to terraform as MONGO_ORG_ID. MongoDB organization id'
+      mongo_sa_id:
+        default: ''
+        type: string
+        description: 'Passed to terraform as MONGO_SA_ID. Service account used to execute steps'
+      mongo_sa_pwd:
+        default: ''
+        type: string
+        description: 'Passed to terraform as MONGO_SA_PWD. Service account password'
+      mongo_public_key:
+        default: ''
+        type: string
+        description: 'Passed to terraform as MONGODB_ATLAS_PUBLIC_KEY.'
+      mongo_private_key:
+        default: ''
+        type: string
+        description: 'Passed to terraform as MONGODB_ATLAS_PRIVATE_KEY.'
+      ### AWS Section ###
+      role_arn:
+        type: string
+        required: true
+        description: "Role to assume for terraform runs"
+      aws_account_id:
+        type: string
+        required: true
+        description: "AWS account of ECR repository"
+      aws_region:
+        type: string
+        default: eu-north-1
+        desceription: "AWS region of ECR"
+jobs:
+  get_list_of_steps:
+    - name: Git clone the repository
+      uses: actions/checkout@v2
+    - name: Get list of steps
+      id: "terraform_steps"
+      run: | 
+      result=''
+
+      for step in ./terraform/pipeline/*; do
+      if [ -n "$result" ]; then
+      result="$result,"
+      fi
+      result="$result\"$step\""
+      done
+      
+      echo "::set-output name=matrix::{\"steps\":[$result]}"
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      max-parallel: 1
+      matrix:
+        terraform-step: ${{fromJson(steps.terraform_steps.steps)}}
+    concurrency: "terraform"
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.role_arn }}
+          aws-region: ${{ secrets.aws_region }}
+      - uses: hashicorp/setup-terraform@v1
+      - name: Plan Terraform
+        working-directory: ./terraform/${{matrix.terraform-step}}
+        env:
+          TF_VAR_SERVICE_NAME: ${{secrets.service_name}}
+          TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
+          TF_VAR_MONGO_SA_ID: ${{secrets.mongo_sa_id}}
+          TF_VAR_MONGO_SA_PWD: ${{secrets.mongo_sa_pwd}}
+          MONGODB_ATLAS_PUBLIC_KEY: ${{secrets.mongo_public_key}}
+          MONGODB_ATLAS_PRIVATE_KEY: ${{secrets.mongo_private_key}}
+        run: |
+          terraform init
+          terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
+          terraform plan -input=false
+  apply:
+    if: ${{!inputs.plan_only}}
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      max-parallel: 1
+      matrix:
+        terraform-step: ${{fromJson(steps.terraform_steps.steps)}}
+    concurrency: "terraform"
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.role_arn }}
+          aws-region: ${{ secrets.aws_region }}
+      - uses: hashicorp/setup-terraform@v1
+      - name: Plan Terraform
+        working-directory: ./terraform/${{matrix.terraform-step}}
+        env:
+          TF_VAR_SERVICE_NAME: ${{secrets.service_name}}
+          TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
+          TF_VAR_MONGO_SA_ID: ${{secrets.mongo_sa_id}}
+          TF_VAR_MONGO_SA_PWD: ${{secrets.mongo_sa_pwd}}
+          MONGODB_ATLAS_PUBLIC_KEY: ${{secrets.mongo_public_key}}
+          MONGODB_ATLAS_PRIVATE_KEY: ${{secrets.mongo_private_key}}
+        run: |
+          terraform init
+          terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
+          terraform apply -input=false -auto-approve
