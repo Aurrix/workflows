@@ -15,6 +15,7 @@ on:
       dockerfile_path:
         type: string
         default: "./Dockerfile"
+        required: false
         description: "Path to a Dockerfile"
       ecr_name:
         type: string
@@ -26,13 +27,11 @@ on:
         description: "Tag that would make up image name"
     secrets:
       aws_account_id:
-        type: string
         required: true
         description: "AWS account of ECR repository"
       aws_region:
-        type: string
-        default: eu-north-1
-        desceription: "AWS region of ECR"
+        required: true
+        description: "AWS region of ECR"
 jobs:
   publish:
     runs-on: ubuntu-latest
