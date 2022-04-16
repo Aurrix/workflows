@@ -1,6 +1,4 @@
 name: Publish docker image to ECR
-description: |
-  Expects terraoform steps to be in terraform/pipeline
 on:
   workflow_call:
     inputs:
@@ -21,23 +19,18 @@ on:
     secrets:
       ### MongoDB Section ###
       mongo_org_id:
-        default: ''
         type: string
         description: 'Passed to terraform as MONGO_ORG_ID. MongoDB organization id'
       mongo_sa_id:
-        default: ''
         type: string
         description: 'Passed to terraform as MONGO_SA_ID. Service account used to execute steps'
       mongo_sa_pwd:
-        default: ''
         type: string
         description: 'Passed to terraform as MONGO_SA_PWD. Service account password'
       mongo_public_key:
-        default: ''
         type: string
         description: 'Passed to terraform as MONGODB_ATLAS_PUBLIC_KEY.'
       mongo_private_key:
-        default: ''
         type: string
         description: 'Passed to terraform as MONGODB_ATLAS_PRIVATE_KEY.'
       ### AWS Section ###
