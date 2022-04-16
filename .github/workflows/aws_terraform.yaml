@@ -59,17 +59,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Get list of steps
       id: "terraform_steps"
-      run: | 
-      result=''
-
-      for step in ./terraform/pipeline/*; do
-      if [ -n "$result" ]; then
-      result="$result,"
-      fi
-      result="$result\"$step\""
-      done
-      
-      echo "::set-output name=matrix::{\"steps\":[$result]}"
+      run: echo "::set-output name=matrix::{\"steps\":[$(./.github/workflows/scripts/list_items_in_path.sh ./terraform/pipeline/*)]}"
   plan:
     runs-on: ubuntu-latest
     permissions:
