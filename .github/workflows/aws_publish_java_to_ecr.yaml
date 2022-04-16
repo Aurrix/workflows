@@ -43,10 +43,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Configure AWS Credentials
-          uses: aws-actions/configure-aws-credentials@v1
-          with:
-            role-to-assume: ${{ secrets.ROLE_ARN }}
-            aws-region: ${{ secrets.AWS_REGION }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
       - name: Set up JDK
         uses: actions/setup-java@v2
       - name: Set up gradle
