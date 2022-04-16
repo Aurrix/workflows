@@ -19,32 +19,24 @@ on:
     secrets:
       ### MongoDB Section ###
       mongo_org_id:
-        type: string
         description: 'Passed to terraform as MONGO_ORG_ID. MongoDB organization id'
       mongo_sa_id:
-        type: string
         description: 'Passed to terraform as MONGO_SA_ID. Service account used to execute steps'
       mongo_sa_pwd:
-        type: string
         description: 'Passed to terraform as MONGO_SA_PWD. Service account password'
       mongo_public_key:
-        type: string
         description: 'Passed to terraform as MONGODB_ATLAS_PUBLIC_KEY.'
       mongo_private_key:
-        type: string
         description: 'Passed to terraform as MONGODB_ATLAS_PRIVATE_KEY.'
       ### AWS Section ###
       role_arn:
-        type: string
         required: true
         description: "Role to assume for terraform runs"
       aws_account_id:
-        type: string
         required: true
         description: "AWS account of ECR repository"
       aws_region:
-        type: string
-        default: eu-north-1
+        required: true
         desceription: "AWS region of ECR"
 jobs:
   get_list_of_steps:
