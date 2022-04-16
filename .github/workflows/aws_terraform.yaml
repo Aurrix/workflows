@@ -55,11 +55,13 @@ on:
         desceription: "AWS region of ECR"
 jobs:
   get_list_of_steps:
-    - name: Git clone the repository
-      uses: actions/checkout@v2
-    - name: Get list of steps
-      id: "terraform_steps"
-      run: echo "::set-output name=matrix::{\"steps\":[$(./.github/workflows/scripts/list_items_in_path.sh ./terraform/pipeline/*)]}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - name: Get list of steps
+        id: "terraform_steps"
+        run: echo "::set-output name=matrix::{\"steps\":[$(./.github/workflows/scripts/list_items_in_path.sh ./terraform/pipeline/*)]}"
   plan:
     runs-on: ubuntu-latest
     permissions:
