@@ -1,10 +1,9 @@
 #!/bin/bash
-
 set -euo pipefail
 
 result=''
-
-cd $1
+echo here
+cd "$1"
 
 for step in ./*; do
 if [ -n "$result" ]; then
