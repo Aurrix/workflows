@@ -45,6 +45,7 @@ jobs:
         id: "terraform_steps"
         run: echo "::set-output name=matrix::{\"steps\":[$(./.github/workflows/scripts/list_items_in_path.sh ./terraform/pipeline/*)]}"
   plan:
+    needs: get_list_of_steps
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -52,7 +53,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        terraform-step: ${{fromJson(steps.terraform_steps.outputs.matrix)}}
+        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs.matrix)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
@@ -78,7 +79,7 @@ jobs:
           terraform plan -input=false
   apply:
     if: ${{!inputs.plan_only}}
-    needs: plan
+    needs: ['plan', 'get_list_of_steps']
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -86,7 +87,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        terraform-step: ${{fromJson(steps.terraform_steps.steps)}}
+        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs.matrix)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
