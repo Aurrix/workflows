@@ -7,6 +7,11 @@ on:
         type: string
         required: true
         description: "Json encoded string of directories with key terraform-dir"
+      base_path:
+        default: "./terraform"
+        type: string
+        required: false
+        description: "Base path to terraform folder"
       workspace:
         type: string
         required: true
