@@ -2,6 +2,10 @@ name: Test Gradle Java Application
 on:
   workflow_call:
     inputs:
+      task:
+        required: true
+        type: string
+        description: "Command to run"
       java_version:
         type: number
         default: 17
@@ -25,4 +29,4 @@ jobs:
       - name: Run tests
         uses: gradle/gradle-build-action@v2.1.3
         with:
-          arguments: test
+          arguments: ${{inputs.task}}
