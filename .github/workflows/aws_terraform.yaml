@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Get list of steps
         id: "list_terraform_folders_step"
-        run: echo "::set-output name=list::{\"dirs\":[$(./.github/workflows/scripts/list_items_in_path.sh ./terraform/pipeline/*)]}"
+        run: echo "::set-output name=list::[$(./.github/workflows/scripts/list_items_in_path.sh ./terraform/pipeline/*)]"
   plan:
     needs: get_list_of_steps
     runs-on: ubuntu-latest
@@ -55,7 +55,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs.directories).dirs}}
+        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs.directories)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
@@ -89,7 +89,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs.directories).dirs}}
+        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs.directories)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
