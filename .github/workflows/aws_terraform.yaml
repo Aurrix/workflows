@@ -38,12 +38,14 @@ on:
 jobs:
   get_list_of_steps:
     runs-on: ubuntu-latest
+    outputs:
+      directories: ${{steps.list_terraform_folders_step.outputs.list}}
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v2
       - name: Get list of steps
-        id: "terraform_steps"
-        run: echo "::set-output name=matrix::{\"steps\":[$(./.github/workflows/scripts/list_items_in_path.sh ./terraform/pipeline/*)]}"
+        id: "list_terraform_folders_step"
+        run: echo "::set-output name=list::{\"dirs\":[$(./.github/workflows/scripts/list_items_in_path.sh ./terraform/pipeline/*)]}"
   plan:
     needs: get_list_of_steps
     runs-on: ubuntu-latest
@@ -53,7 +55,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs)}}
+        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs.directories).dirs}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
@@ -87,7 +89,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs)}}
+        terraform-step: ${{fromJson(needs.get_list_of_steps.outputs.directories).dirs}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
