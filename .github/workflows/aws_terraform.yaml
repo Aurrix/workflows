@@ -52,7 +52,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        terraform-step: ${{fromJson(steps.terraform_steps.matrix)}}
+        terraform-step: ${{fromJson(steps.terraform_steps.outputs.matrix)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
