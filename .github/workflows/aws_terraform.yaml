@@ -64,7 +64,7 @@ jobs:
           aws-region: ${{ secrets.aws_region }}
       - uses: hashicorp/setup-terraform@v1
       - name: Plan Terraform
-        working-directory: ./terraform/${{matrix.terraform-dir}}
+        working-directory: ${{inputs.base_path/matrix.terraform-dir}}
         env:
           TF_VAR_SERVICE_NAME: ${{secrets.service_name}}
           TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
@@ -97,7 +97,7 @@ jobs:
           aws-region: ${{ secrets.aws_region }}
       - uses: hashicorp/setup-terraform@v1
       - name: Plan Terraform
-        working-directory: ./terraform/${{matrix.terraform-dir}}
+        working-directory: ${{inputs.base_path/matrix.terraform-dir}}
         env:
           TF_VAR_SERVICE_NAME: ${{secrets.service_name}}
           TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
