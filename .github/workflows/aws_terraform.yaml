@@ -6,7 +6,7 @@ on:
       directories:
         type: string
         required: true
-        description: "Json encoded string of directories"
+        description: "Json encoded string of directories with key terraform-dir"
       workspace:
         type: string
         required: true
@@ -47,8 +47,7 @@ jobs:
       contents: read
     strategy:
       max-parallel: 1
-      matrix:
-        terraform-step: ${{fromJson(inputs.directories)}}
+      matrix: ${{fromJson(inputs.directories)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
@@ -60,7 +59,7 @@ jobs:
           aws-region: ${{ secrets.aws_region }}
       - uses: hashicorp/setup-terraform@v1
       - name: Plan Terraform
-        working-directory: ./terraform/${{matrix.terraform-step}}
+        working-directory: ./terraform/${{matrix.terraform-dir}}
         env:
           TF_VAR_SERVICE_NAME: ${{secrets.service_name}}
           TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
@@ -81,8 +80,7 @@ jobs:
       contents: read
     strategy:
       max-parallel: 1
-      matrix:
-        terraform-step: ${{fromJson(inputs.directories)}}
+      matrix: ${{fromJson(inputs.directories)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
@@ -94,7 +92,7 @@ jobs:
           aws-region: ${{ secrets.aws_region }}
       - uses: hashicorp/setup-terraform@v1
       - name: Plan Terraform
-        working-directory: ./terraform/${{matrix.terraform-step}}
+        working-directory: ./terraform/${{matrix.terraform-dir}}
         env:
           TF_VAR_SERVICE_NAME: ${{secrets.service_name}}
           TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
