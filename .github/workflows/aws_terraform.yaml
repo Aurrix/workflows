@@ -39,9 +39,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: ls
+      - uses: actions/checkout@v2
+      - run: ls ./
       - run: |
           cd /home/runner/work
+          ls
+      - run: |
+          cd /home/runner/work/cv-service
+          ls
+      - run: |
+          cd /home/runner/work/cv-service/.github/workflows
           ls
   get_list_of_steps:
     runs-on: ubuntu-latest
