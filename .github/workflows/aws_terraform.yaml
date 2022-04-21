@@ -83,7 +83,6 @@ jobs:
           terraform plan -input=false
   apply:
     if: ${{!inputs.plan_only}}
-    needs: [ 'plan' ]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
