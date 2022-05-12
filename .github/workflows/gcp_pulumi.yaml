@@ -1,0 +1,100 @@
+name: Publish docker image to ECR
+on:
+  workflow_call:
+    inputs:
+      base_path:
+        default: "infrastructure"
+        type: string
+        required: false
+        description: "Path to pulumi folder"
+      stack:
+        type: string
+        required: true
+        description: "Workspace to run terraform on"
+      preview:
+        default: false
+        type: boolean
+        required: false
+        description: "If true runs only preview"
+      ### Generic Variables ###
+      service_name:
+        default: 'unnamed_service'
+        type: string
+        required: false
+        description: 'Passed to terraform as SERVICE_NAME'
+      ### GCP ###
+      pool_name:
+        default: 'github'
+        type: string
+        required: false
+        description: "GCP Workload Identity Pool Name"
+      provider_name:
+        default: 'github'
+        type: string
+        required: false
+        description: "GCP Workload Identity Pool Provider Name"
+      backend:
+        default: 'gs://aurrix-pulumi'
+        type: string
+        required: false
+        description: "Pulumi Backend"
+      service_account:
+        required: true
+        type: string
+      project_id:
+        required: true
+        type: string
+
+jobs:
+  preview:
+    if: ${{inputs.preview}}
+    runs-on: ubuntu-latest
+    concurrency: "pulumi"
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: projects/${{inputs.project_id}}/locations/global/workloadIdentityPools/${{inputs.pool_name}}/providers/${{inputs.provider_name}}
+          service_account: ${{inputs.service_account}}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - run: cd ${{inputs.base_path}} && npm install
+      - uses: pulumi/actions@v3
+        with:
+          command: preview
+          stack-name: ${{inputs.stack}}
+          work-dir: ${{inputs.base_path}}
+          cloud-url: ${{inputs.backend}}
+  deploy:
+    if: ${{!inputs.preview}}
+    runs-on: ubuntu-latest
+    concurrency: "pulumi"
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: projects/${{inputs.project_id}}/locations/global/workloadIdentityPools/${{inputs.pool_name}}/providers/${{inputs.provider_name}}
+          service_account: ${{inputs.service_account}}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - run: cd ${{inputs.base_path}} && npm install
+      - uses: pulumi/actions@v3
+        with:
+          command: up
+          stack-name: ${{inputs.stack}}
+          work-dir: ${{inputs.base_path}}
+          cloud-url: ${{inputs.backend}}
