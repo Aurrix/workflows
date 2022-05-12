@@ -16,12 +16,6 @@ on:
         type: boolean
         required: false
         description: "If true runs only preview"
-      ### Generic Variables ###
-      service_name:
-        default: 'unnamed_service'
-        type: string
-        required: false
-        description: 'Passed to terraform as SERVICE_NAME'
       ### GCP ###
       pool_name:
         default: 'github'
