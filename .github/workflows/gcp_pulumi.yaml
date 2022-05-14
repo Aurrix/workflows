@@ -107,13 +107,16 @@ jobs:
         with:
           workload_identity_provider: projects/${{inputs.project_id}}/locations/global/workloadIdentityPools/${{inputs.pool_name}}/providers/${{inputs.provider_name}}
           service_account: ${{inputs.service_account}}
+          token_format: 'access_token'
+      - uses: 'docker/login-action@v1'
+        with:
+          registry: ${{inputs.artifact_registry_location}}-docker.pkg.dev
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
       - uses: actions/setup-node@v2
         with:
           node-version: 16.x
       - run: cd ${{inputs.base_path}} && npm install
-      - run: |
-          yes | gcloud auth configure-docker
-          yes | gcloud auth configure-docker ${{inputs.artifact_registry_location}}-docker.pkg.dev
       - uses: pulumi/actions@v3
         with:
           command: up
