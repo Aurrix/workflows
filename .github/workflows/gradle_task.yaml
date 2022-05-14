@@ -2,12 +2,12 @@ name: Test Gradle Java Application
 on:
   workflow_call:
     inputs:
-      report_name:
+      artifact_name:
         default: "Unnamed Report "
         type: string
         required: false
         description: "Artifact name"
-      report_path:
+      artifact_path:
         type: string
         required: false
         description: "Report path to upload"
