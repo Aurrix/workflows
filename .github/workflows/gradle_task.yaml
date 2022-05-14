@@ -42,5 +42,5 @@ jobs:
       - name: "Upload reports"
         uses: actions/upload-artifact@v3
         with:
-          name: ${{inputs.report_name}}
-          path: ${{inputs.report_path}}
+          name: ${{inputs.artifact_name}}
+          path: ${{inputs.artifact_path}}
