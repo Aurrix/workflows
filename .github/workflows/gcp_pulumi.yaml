@@ -111,7 +111,9 @@ jobs:
         with:
           node-version: 16.x
       - run: cd ${{inputs.base_path}} && npm install
-      - run: yes | gcloud auth configure-docker ${{inputs.artifact_registry_location}}-docker.pkg.dev
+      - run: |
+          yes | gcloud auth configure-docker
+          yes | gcloud auth configure-docker ${{inputs.artifact_registry_location}}-docker.pkg.dev
       - uses: pulumi/actions@v3
         with:
           command: up
