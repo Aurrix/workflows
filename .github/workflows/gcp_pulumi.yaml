@@ -2,6 +2,11 @@ name: Publish docker image to ECR
 on:
   workflow_call:
     inputs:
+      artifact_registry_location:
+        default: "europe-west1"
+        type: string
+        required: false
+        description: "Required to authenticate Docker daemon"
       artifact_name:
         type: string
         required: false
@@ -106,7 +111,7 @@ jobs:
         with:
           node-version: 16.x
       - run: cd ${{inputs.base_path}} && npm install
-      - run: yes | gcloud auth configure-docker
+      - run: yes | gcloud auth configure-docker ${{inputs.artifact_registry_location}}-docker.pkg.dev
       - uses: pulumi/actions@v3
         with:
           command: up
