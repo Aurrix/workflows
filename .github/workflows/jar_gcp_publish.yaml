@@ -40,6 +40,9 @@ on:
       project_id:
         required: true
         type: string
+      project:
+        required: true
+        type: string
 
 jobs:
   upload:
@@ -74,4 +77,4 @@ jobs:
         with:
           context: '.'
           push: true
-          tags: ${{inputs.artifact_registry_location}}-docker.pkg.dev/${{inputs.project_id}}/${{inputs.artifact_registry_name}}/${{inputs.image_name}}
+          tags: ${{inputs.artifact_registry_location}}-docker.pkg.dev/${{inputs.project}}/${{inputs.artifact_registry_name}}/${{inputs.image_name}}
