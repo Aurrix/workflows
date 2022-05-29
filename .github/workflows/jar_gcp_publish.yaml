@@ -1,0 +1,75 @@
+name: Publish docker image to AR
+on:
+  workflow_call:
+    inputs:
+      artifact_name:
+        type: string
+        required: false
+        description: "Download artifact name"
+      artifact_path:
+        type: string
+        required: false
+        description: "Download artifact path"
+      image_name:
+        type: string
+        required: true
+        description: "Build image name"
+      ### GCP ###
+      artifact_registry_location:
+        default: "europe-west1"
+        type: string
+        required: false
+        description: "Required to authenticate Docker daemon"
+      artifact_registry_name:
+        type: string
+        required: true
+        description: "GCP Artifact Registry Name"
+      pool_name:
+        default: 'github'
+        type: string
+        required: false
+        description: "GCP Workload Identity Pool Name"
+      provider_name:
+        default: 'github'
+        type: string
+        required: false
+        description: "GCP Workload Identity Pool Provider Name"
+      service_account:
+        required: true
+        type: string
+      project_id:
+        required: true
+        type: string
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - name: Download Artifact
+        if: ${{inputs.artifact_name}}
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{inputs.artifact_name}}
+          path: ${{inputs.artifact_path}}
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: projects/${{inputs.project_id}}/locations/global/workloadIdentityPools/${{inputs.pool_name}}/providers/${{inputs.provider_name}}
+          service_account: ${{inputs.service_account}}
+      - name: Login To registry
+        uses: 'docker/login-action@v1'
+        with:
+          registry: ${{inputs.artifact_registry_location}}-docker.pkg.dev
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'}
+      - name: Build and upload
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: ${{inputs.artifact_registry_location}}-docker.pkg.dev/${{inputs.project_id}}/${{inputs.artifact_registry_name}}/${{inputs.image_name}}
