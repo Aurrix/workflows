@@ -48,6 +48,7 @@ jobs:
   plan:
     if: ${{inputs.plan_only}}
     runs-on: ubuntu-latest
+    environment: ${{inputs.workspace}}
     permissions:
       id-token: write
       contents: read
@@ -80,6 +81,7 @@ jobs:
   apply:
     if: ${{!inputs.plan_only}}
     runs-on: ubuntu-latest
+    environment: ${{inputs.workspace}}
     permissions:
       id-token: write
       contents: read
