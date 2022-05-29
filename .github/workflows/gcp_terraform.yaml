@@ -71,10 +71,6 @@ jobs:
       - name: Plan Terraform
         working-directory: ${{inputs.base_path}}/${{matrix.terraform-dir}}
         env:
-          TF_VAR_SERVICE_NAME: ${{inputs.service_name}}
-          TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
-          TF_VAR_MONGO_SA_ID: ${{secrets.mongo_sa_id}}
-          TF_VAR_MONGO_SA_PWD: ${{secrets.mongo_sa_pwd}}
           MONGODB_ATLAS_PUBLIC_KEY: ${{secrets.mongo_public_key}}
           MONGODB_ATLAS_PRIVATE_KEY: ${{secrets.mongo_private_key}}
         run: |
@@ -94,12 +90,16 @@ jobs:
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v0
         with:
-          role-to-assume: ${{ secrets.role_arn }}
-          aws-region: ${{ secrets.aws_region }}
+          workload_identity_provider: projects/${{inputs.project_id}}/locations/global/workloadIdentityPools/${{inputs.pool_name}}/providers/${{inputs.provider_name}}
+          service_account: ${{inputs.service_account}}
+          token_format: 'access_token'
       - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.8
       - name: Apply Terraform
         working-directory: ${{inputs.base_path}}/${{matrix.terraform-dir}}
         env:
