@@ -67,7 +67,7 @@ jobs:
         with:
           registry: ${{inputs.artifact_registry_location}}-docker.pkg.dev
           username: 'oauth2accesstoken'
-          password: ${{ steps.auth.outputs.access_token }}
+          password: '${{ steps.auth.outputs.access_token }}'
       - name: Build and upload
         uses: docker/build-push-action@v3
         with:
