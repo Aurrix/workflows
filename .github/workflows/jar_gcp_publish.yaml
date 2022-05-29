@@ -72,5 +72,6 @@ jobs:
       - name: Build and upload
         uses: docker/build-push-action@v3
         with:
+          context: '.'
           push: true
           tags: ${{inputs.artifact_registry_location}}-docker.pkg.dev/${{inputs.project_id}}/${{inputs.artifact_registry_name}}/${{inputs.image_name}}
