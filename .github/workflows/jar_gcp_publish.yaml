@@ -2,6 +2,11 @@ name: Publish docker image to AR
 on:
   workflow_call:
     inputs:
+      base_path:
+        type: string
+        required: false
+        default: "./"
+        description: "Docker context"
       artifact_name:
         type: string
         required: false
