@@ -80,6 +80,6 @@ jobs:
       - name: Build and upload
         uses: docker/build-push-action@v3
         with:
-          context: '.'
+          context: ${{inputs.base_path}}
           push: true
           tags: ${{inputs.artifact_registry_location}}-docker.pkg.dev/${{inputs.project}}/${{inputs.artifact_registry_name}}/${{inputs.image_name}}
