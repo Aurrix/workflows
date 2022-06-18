@@ -45,8 +45,6 @@ jobs:
         with:
           build-root-directory: ${{inputs.base_path}}
           arguments: ${{inputs.task}}
-      - run: ls
-      - run: cd ${{inputs.base_path}} && ls
       - name: "Upload reports"
         uses: actions/upload-artifact@v3
         with:
