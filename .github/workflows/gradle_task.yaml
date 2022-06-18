@@ -15,6 +15,11 @@ on:
         required: true
         type: string
         description: "Command to run"
+      base_path:
+        default: "./"
+        type: string
+        required: false
+        description: "Base gradlew path"
       java_version:
         type: number
         default: 17
@@ -35,10 +40,10 @@ jobs:
         with:
           distribution: ${{inputs.java_distro}}
           java-version: ${{inputs.java_version}}
-      - name: "Run tests"
+      - name: "Set up Gradle"
         uses: gradle/gradle-build-action@v2.1.3
-        with:
-          arguments: ${{inputs.task}}
+      - name: "Run Gradle Task"
+        run: "${{inputs.base_path}}gradlew ${{inputs.task}}"
       - name: "Upload reports"
         uses: actions/upload-artifact@v3
         with:
