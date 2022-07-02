@@ -88,7 +88,7 @@ jobs:
           service_account: ${{inputs.service_account}}
           token_format: 'access_token'
       - name: Configure kubectl
-        run: gcloud components install kubectl
+        run: sudo apt-get install kubectl
       - name: Login to zone cluster
         if: ${{inputs.zone}}
         run: gcloud container clusters get-credentials ${{inputs.cluster}} --zone=${{inputs.zone}}
