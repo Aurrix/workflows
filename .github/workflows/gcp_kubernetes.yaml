@@ -16,11 +16,11 @@ on:
         type: string
         description: "Name of the cluster"
       region:
-        required: true
+        required: false
         type: string
         description: "Name of the cluster"
       zone:
-        required: true
+        required: false
         type: string
         description: "Name of the cluster"
       ### GCP ###
