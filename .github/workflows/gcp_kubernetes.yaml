@@ -91,9 +91,9 @@ jobs:
         run: gcloud components install kubectl
       - name: Login to zone cluster
         if: ${{inputs.zone}}
-        run: gcloud container clusters get-credentials ${{inputs.cluster}} --zone=${{inputes.zone}}
+        run: gcloud container clusters get-credentials ${{inputs.cluster}} --zone=${{inputs.zone}}
       - name: Login to region cluster
         if: ${{inputs.region}}
-        run: gcloud container clusters get-credentials ${{inputs.cluster}} --region=${{inputes.region}}
+        run: gcloud container clusters get-credentials ${{inputs.cluster}} --region=${{inputs.region}}
       - name: Apply
         run: kubectl apply -f ${{matrix.kubernetes-dir}}
