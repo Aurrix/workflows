@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
     outputs:
-      directories: ${{steps.list.outputs.}}
+      directories: ${{steps.list.outputs.list}}
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v2
