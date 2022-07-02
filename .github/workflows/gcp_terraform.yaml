@@ -3,10 +3,6 @@ on:
   workflow_call:
     inputs:
       ### Terraform ###
-      directories:
-        type: string
-        required: true
-        description: "Json encoded string of directories with key terraform-dir"
       base_path:
         default: "./terraform"
         type: string
@@ -45,8 +41,35 @@ on:
       mongo_private_key:
         required: false
 jobs:
+  make_dir_list:
+    name: "Get list of kubernetes directories"
+    runs-on: ubuntu-latest
+    environment: ${{inputs.environment}}
+    outputs:
+      directories: ${{steps.list.outputs.list}}
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - name: Construct dir list
+        id: list
+        run: |
+          cd ${{inputs.base_path}}
+          for step in ./*; do
+          if [ "$step" == "./GLOBAL" ]; then
+              continue
+          fi
+          if [ -n "$result" ]; then
+          result="$result,"
+          fi
+          result="$result\"$step\""
+          done
+          
+          echo "$result"
+          echo ::set-output name=list::"{\"terraform-dir\":[$result]}"
   plan:
     if: ${{inputs.plan_only}}
+    needs:
+      - make_dir_list
     runs-on: ubuntu-latest
     environment: ${{inputs.workspace}}
     permissions:
@@ -80,6 +103,8 @@ jobs:
           terraform plan -input=false -var-file=../GLOBAL/dev.tfvars -var-file=../GLOBAL/shared.tfvars
   apply:
     if: ${{!inputs.plan_only}}
+    needs:
+      - make_dir_list
     runs-on: ubuntu-latest
     environment: ${{inputs.workspace}}
     permissions:
@@ -87,7 +112,7 @@ jobs:
       contents: read
     strategy:
       max-parallel: 1
-      matrix: ${{fromJson(inputs.directories)}}
+      matrix: ${{fromJson(needs.make_dir_list.outputs.directories)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository

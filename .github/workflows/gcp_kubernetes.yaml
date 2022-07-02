@@ -42,6 +42,7 @@ on:
         type: string
 jobs:
   make_dir_list:
+    name: "Get list of kubernetes directories"
     runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
     outputs:
