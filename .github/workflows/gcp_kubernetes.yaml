@@ -1,0 +1,99 @@
+name: Terraform steps GCP
+on:
+  workflow_call:
+    inputs:
+      base_path:
+        default: "./kubernetes"
+        type: string
+        required: false
+        description: "Base path to kubernetes folder"
+      environment:
+        type: string
+        required: true
+        description: "Job environment"
+      cluster:
+        required: true
+        type: string
+        description: "Name of the cluster"
+      region:
+        required: true
+        type: string
+        description: "Name of the cluster"
+      zone:
+        required: true
+        type: string
+        description: "Name of the cluster"
+      ### GCP ###
+      pool_name:
+        default: 'github'
+        type: string
+        required: false
+        description: "GCP Workload Identity Pool Name"
+      provider_name:
+        default: 'github'
+        type: string
+        required: false
+        description: "GCP Workload Identity Pool Provider Name"
+      service_account:
+        required: true
+        type: string
+      project_id:
+        required: true
+        type: string
+jobs:
+  make_dir_list:
+    runs-on: ubuntu-latest
+    environment: ${{inputs.environment}}
+    outputs:
+      directories: ${{steps.list.outputs.}}
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - name: Construct dir list
+        id: list
+        run: |
+          cd ${{inputs.base_path}}
+          for step in ./*; do
+          if [ "$step" == "./GLOBAL" ]; then
+              continue
+          fi
+          if [ -n "$result" ]; then
+          result="$result,"
+          fi
+          result="$result\"$step\""
+          done
+
+          echo "$result"
+          echo ::set-output name=list::"{\"kubernetes-dir\":[$result]}"
+  apply:
+    needs:
+      - make_dir_list
+    runs-on: ubuntu-latest
+    environment: ${{inputs.environment}}
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      max-parallel: 1
+      matrix: ${{fromJson(needs.make_dir_list.outputs.directories)}}
+    concurrency: "kubernetes"
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: projects/${{inputs.project_id}}/locations/global/workloadIdentityPools/${{inputs.pool_name}}/providers/${{inputs.provider_name}}
+          service_account: ${{inputs.service_account}}
+          token_format: 'access_token'
+      - name: Configure kubectl
+        run: gcloud components install kubectl
+      - name: Login to zone cluster
+        if: ${{inputs.zone}}
+        run: gcloud container clusters get-credentials ${{inputs.cluster}} --zone=${{inputes.zone}}
+      - name: Login to region cluster
+        if: ${{inputs.region}}
+        run: gcloud container clusters get-credentials ${{inputs.cluster}} --region=${{inputes.region}}
+      - name: Apply
+        run: kubectl apply -f ${{matrix.kubernetes-dir}}
