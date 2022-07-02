@@ -42,7 +42,7 @@ on:
         required: false
 jobs:
   make_dir_list:
-    name: "Get list of kubernetes directories"
+    name: "Get list of terraform directories"
     runs-on: ubuntu-latest
     environment: ${{inputs.environment}}
     outputs:
