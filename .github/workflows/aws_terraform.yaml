@@ -65,7 +65,7 @@ jobs:
       contents: read
     strategy:
       max-parallel: 1
-      matrix: ${{fromJson(inputs.directories)}}
+      matrix: ${{fromJson(needs.make_dir_list.outputs.directories)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
@@ -94,7 +94,7 @@ jobs:
       contents: read
     strategy:
       max-parallel: 1
-      matrix: ${{fromJson(inputs.directories)}}
+      matrix: ${{fromJson(needs.make_dir_list.outputs.directories)}}
     concurrency: "terraform"
     steps:
       - name: Git clone the repository
