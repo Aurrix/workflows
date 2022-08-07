@@ -3,10 +3,6 @@ on:
   workflow_call:
     inputs:
       ### Terraform ###
-      directories:
-        type: string
-        required: true
-        description: "Json encoded string of directories with key terraform-dir"
       base_path:
         default: "./terraform"
         type: string
@@ -21,24 +17,12 @@ on:
         type: boolean
         required: false
         description: "If true runs only plan"
-      ### Generic Variables ###
-      service_name:
-        default: 'unnamed_service'
+      terraform_version:
+        default: '1.2.5'
         type: string
         required: false
-        description: 'Passed to terraform as SERVICE_NAME'
+        description: "Terraform version"
     secrets:
-      ### MongoDB Section ###
-      mongo_org_id:
-        required: false
-      mongo_sa_id:
-        required: false
-      mongo_sa_pwd:
-        required: false
-      mongo_public_key:
-        required: false
-      mongo_private_key:
-        required: false
       ### AWS Section ###
       role_arn:
         required: true
@@ -47,8 +31,35 @@ on:
       aws_region:
         required: true
 jobs:
+  make_dir_list:
+    name: "Get list of terraform directories"
+    runs-on: ubuntu-latest
+    environment: ${{inputs.environment}}
+    outputs:
+      directories: ${{steps.list.outputs.list}}
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v2
+      - name: Construct dir list
+        id: list
+        run: |
+          cd ${{inputs.base_path}}
+          for step in ./*; do
+          if [ "$step" == "./GLOBAL" ]; then
+              continue
+          fi
+          if [ -n "$result" ]; then
+          result="$result,"
+          fi
+          result="$result\"$step\""
+          done
+          
+          echo "$result"
+          echo ::set-output name=list::"{\"terraform-dir\":[$result]}"
   plan:
     if: ${{inputs.plan_only}}
+    needs:
+      - make_dir_list
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -67,22 +78,17 @@ jobs:
           aws-region: ${{ secrets.aws_region }}
       - uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.1.8
+          terraform_version: ${{inputs.terraform_version}}
       - name: Plan Terraform
         working-directory: ${{inputs.base_path}}/${{matrix.terraform-dir}}
-        env:
-          TF_VAR_SERVICE_NAME: ${{inputs.service_name}}
-          TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
-          TF_VAR_MONGO_SA_ID: ${{secrets.mongo_sa_id}}
-          TF_VAR_MONGO_SA_PWD: ${{secrets.mongo_sa_pwd}}
-          MONGODB_ATLAS_PUBLIC_KEY: ${{secrets.mongo_public_key}}
-          MONGODB_ATLAS_PRIVATE_KEY: ${{secrets.mongo_private_key}}
         run: |
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
           terraform plan -input=false
   apply:
     if: ${{!inputs.plan_only}}
+    needs:
+      - make_dir_list
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -100,15 +106,10 @@ jobs:
           role-to-assume: ${{ secrets.role_arn }}
           aws-region: ${{ secrets.aws_region }}
       - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: ${{inputs.terraform_version}}
       - name: Apply Terraform
         working-directory: ${{inputs.base_path}}/${{matrix.terraform-dir}}
-        env:
-          TF_VAR_SERVICE_NAME: ${{inputs.service_name}}
-          TF_VAR_MONGO_ORG_ID: ${{secrets.mongo_org_id}}
-          TF_VAR_MONGO_SA_ID: ${{secrets.mongo_sa_id}}
-          TF_VAR_MONGO_SA_PWD: ${{secrets.mongo_sa_pwd}}
-          MONGODB_ATLAS_PUBLIC_KEY: ${{secrets.mongo_public_key}}
-          MONGODB_ATLAS_PRIVATE_KEY: ${{secrets.mongo_private_key}}
         run: |
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
