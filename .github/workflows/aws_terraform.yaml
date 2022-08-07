@@ -83,7 +83,7 @@ jobs:
         run: |
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
-          terraform plan -input=false
+          terraform plan -input=false -var-file=../GLOBAL/dev.tfvars -var-file=../GLOBAL/shared.tfvars
   apply:
     if: ${{!inputs.plan_only}}
     needs:
@@ -112,4 +112,4 @@ jobs:
         run: |
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
-          terraform apply -input=false -auto-approve
+          terraform apply -input=false -auto-approve -var-file=../GLOBAL/dev.tfvars -var-file=../GLOBAL/shared.tfvars
