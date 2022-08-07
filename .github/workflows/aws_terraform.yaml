@@ -86,9 +86,9 @@ jobs:
       - name: Plan Terraform
         working-directory: ${{inputs.base_path}}/${{matrix.terraform-dir}}
         run: |
-          cp -a ../GLOBAL/SHARED/ ./
+          cp -a ../GLOBAL/SHARED/. ./
           if [ -n "${{inputs.tfvars_dir}}" ]; then
-             cp -a ../GLOBAL/${{inputs.tfvars_dir}}/ ./
+             cp -a ../GLOBAL/${{inputs.tfvars_dir}}/. ./
           fi
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
@@ -119,9 +119,9 @@ jobs:
       - name: Apply Terraform
         working-directory: ${{inputs.base_path}}/${{matrix.terraform-dir}}
         run: |
-          cp -a ../GLOBAL/SHARED/ ./
+          cp -a ../GLOBAL/SHARED/. ./
           if [ -n "${{inputs.tfvars_dir}}" ]; then
-             cp -a ../GLOBAL/${{inputs.tfvars_dir}}/ ./
+             cp -a ../GLOBAL/${{inputs.tfvars_dir}}/. ./
           fi
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
