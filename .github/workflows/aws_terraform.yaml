@@ -26,9 +26,6 @@ on:
       role_arn:
         type: string
         required: true
-      aws_account_id:
-        type: string
-        required: true
       aws_region:
         type: string
         required: true
