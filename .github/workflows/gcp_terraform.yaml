@@ -17,6 +17,16 @@ on:
         type: boolean
         required: false
         description: "If true runs only plan"
+      terraform_version:
+        default: '1.2.5'
+        type: string
+        required: false
+        description: "Terraform version"
+      tfvars_dir:
+        default: ''
+        type: string
+        required: false
+        description: "Terraform tfvars directory to be copied"
       ### GCP ###
       pool_name:
         default: 'github'
@@ -34,12 +44,6 @@ on:
       project_id:
         required: true
         type: string
-    secrets:
-      ### MongoDB Section ###
-      mongo_public_key:
-        required: false
-      mongo_private_key:
-        required: false
 jobs:
   make_dir_list:
     name: "Get list of terraform directories"
@@ -91,16 +95,17 @@ jobs:
           token_format: 'access_token'
       - uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.1.8
+          terraform_version: ${{inputs.terraform_version}}
       - name: Plan Terraform
         working-directory: ${{inputs.base_path}}/${{matrix.terraform-dir}}
-        env:
-          MONGODB_ATLAS_PUBLIC_KEY: ${{secrets.mongo_public_key}}
-          MONGODB_ATLAS_PRIVATE_KEY: ${{secrets.mongo_private_key}}
         run: |
+          cp -a ../GLOBAL/SHARED/. ./
+          if [ -n "${{inputs.tfvars_dir}}" ]; then
+          cp -a ../GLOBAL/${{inputs.tfvars_dir}}/. ./
+          fi
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
-          terraform plan -input=false -var-file=../GLOBAL/dev.tfvars -var-file=../GLOBAL/shared.tfvars
+          terraform plan -input=false
   apply:
     if: ${{!inputs.plan_only}}
     needs:
@@ -126,13 +131,14 @@ jobs:
           token_format: 'access_token'
       - uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.1.8
+          terraform_version: ${{inputs.terraform_version}}
       - name: Apply Terraform
         working-directory: ${{inputs.base_path}}/${{matrix.terraform-dir}}
-        env:
-          MONGODB_ATLAS_PUBLIC_KEY: ${{secrets.mongo_public_key}}
-          MONGODB_ATLAS_PRIVATE_KEY: ${{secrets.mongo_private_key}}
         run: |
+          cp -a ../GLOBAL/SHARED/. ./
+          if [ -n "${{inputs.tfvars_dir}}" ]; then
+          cp -a ../GLOBAL/${{inputs.tfvars_dir}}/. ./
+          fi
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
-          terraform apply -input=false -auto-approve -var-file=../GLOBAL/dev.tfvars -var-file=../GLOBAL/shared.tfvars
+          terraform apply -input=false -auto-approve

@@ -92,7 +92,7 @@ jobs:
           fi
           terraform init
           terraform workspace select ${{inputs.workspace}} || terraform workspace new ${{inputs.workspace}}
-          terraform plan -input=false -auto-approve
+          terraform plan -input=false
   apply:
     if: ${{!inputs.plan_only}}
     needs:
